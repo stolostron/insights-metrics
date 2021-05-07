@@ -17,7 +17,7 @@ IMAGE_VENDOR =Red Hat
 
 IMAGE_DESCRIPTION =Insights ingestor
 IMAGE_SUMMARY =$(IMAGE_DESCRIPTION)
-IMAGE_OPENSHIFT_TAGS =Insights ingestor
+IMAGE_OPENSHIFT_TAGS =Insights metrics
 
 DOCKER_BUILD_OPTS=--build-arg "VCS_REF=$(SEMVERSION)" \
 	--build-arg "VCS_URL=$(VCS_URL)" \

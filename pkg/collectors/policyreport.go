@@ -41,15 +41,13 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 					klog.Infof("Error unstructuring PolicyReport ")
 					return metric.Family{Metrics: []*metric.Metric{}}
 				}
-				prInstance, errPR := client.Resource(policyReportGvr).Namespace(pr.GetName()).Get(context.TODO(), pr.GetName(), metav1.GetOptions{})
+				_, errPR := client.Resource(policyReportGvr).Namespace(pr.GetName()).Get(context.TODO(), pr.GetName(), metav1.GetOptions{})
 				if errPR != nil {
 					klog.Infof("PolicyReport %s not found, err: %s", pr.GetName(), errPR)
-				} else {
-					klog.Infof("PolicyReport: %v,", prInstance.Object)
 				}
-				clusterID := pr.GetName()
+				clusterName := pr.GetName()
 
-				metrics := getReports(clusterID, pr)
+				metrics := getReports(clusterName, pr)
 
 				f := metric.Family{}
 
