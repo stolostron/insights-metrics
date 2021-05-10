@@ -42,16 +42,12 @@ func main() {
 	opts := options.NewOptions()
 	opts.AddFlags()
 
-	err := opts.Parse()
-	if err != nil {
-		klog.Fatalf("Error: %s", err)
-	}
+	opts.Parse()
 
 	if opts.Help {
 		opts.Usage()
 		os.Exit(0)
 	}
-
 	collectorBuilder := ocollectors.NewBuilder(context.TODO())
 	collectorBuilder.WithApiserver(opts.Apiserver).WithKubeConfig(opts.Kubeconfig)
 	if len(opts.Collectors) == 0 {
@@ -83,10 +79,18 @@ func main() {
 	collectorBuilder.WithWhiteBlackList(whiteBlackList)
 
 	ocmMetricsRegistry := prometheus.NewRegistry()
-	ocmMetricsRegistry.Register(ocollectors.ResourcesPerScrapeMetric)
-	ocmMetricsRegistry.Register(ocollectors.ScrapeErrorTotalMetric)
-	ocmMetricsRegistry.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
-	ocmMetricsRegistry.Register(prometheus.NewGoCollector())
+	if err := ocmMetricsRegistry.Register(ocollectors.ResourcesPerScrapeMetric); err != nil {
+		panic(err)
+	}
+	if err := ocmMetricsRegistry.Register(ocollectors.ScrapeErrorTotalMetric); err != nil {
+		panic(err)
+	}
+	if err := ocmMetricsRegistry.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{})); err != nil {
+		panic(err)
+	}
+	if err := ocmMetricsRegistry.Register(prometheus.NewGoCollector()); err != nil {
+		panic(err)
+	}
 	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort)
 
 	collectors := collectorBuilder.Build()
@@ -97,7 +101,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
 
-	klog.Infof("Starting openshift-state-metrics self metrics server: %s", listenAddress)
+	klog.Infof("Starting insights-metrics self metrics server: %s", listenAddress)
 
 	mux := http.NewServeMux()
 
@@ -105,7 +109,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int) {
 	mux.Handle(metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{ErrorLog: promLogger{}}))
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		if _, err := w.Write([]byte(`<html>
              <head><title>openshift-State-Metrics Metrics Server</title></head>
              <body>
              <h1>openshift-State-Metrics Metrics</h1>
@@ -113,7 +117,9 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int) {
              <li><a href='` + metricsPath + `'>metrics</a></li>
 			 </ul>
              </body>
-             </html>`))
+             </html>`)); err != nil {
+			panic(err)
+		}
 	})
 	log.Fatal(http.ListenAndServe(listenAddress, mux))
 }
@@ -139,11 +145,13 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 	// Add healthzPath
 	mux.HandleFunc(healthzPath, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
-		w.Write([]byte("ok"))
+		if _, err := w.Write([]byte("ok")); err != nil {
+			panic(err)
+		}
 	})
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>
+		if _, err := w.Write([]byte(`<html>
              <head><title>OpenShift Metrics Server</title></head>
              <body>
              <h1>Kube Metrics</h1>
@@ -152,7 +160,9 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
              <li><a href='` + healthzPath + `'>healthz</a></li>
 			 </ul>
              </body>
-             </html>`))
+             </html>`)); err != nil {
+			panic(err)
+		}
 	})
 	log.Fatal(http.ListenAndServe(listenAddress, mux))
 }
