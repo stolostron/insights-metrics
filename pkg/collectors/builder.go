@@ -55,9 +55,8 @@ func (b *Builder) WithKubeConfig(kubeconfig string) *Builder {
 // WithEnabledCollectors sets the enabledCollectors property of a Builder.
 func (b *Builder) WithEnabledCollectors(c []string) *Builder {
 	copy := []string{}
-	for _, s := range c {
-		copy = append(copy, s)
-	}
+
+	copy = append(copy, c...)
 
 	sort.Strings(copy)
 

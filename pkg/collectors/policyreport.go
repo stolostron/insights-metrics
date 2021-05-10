@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	descPolicyReportLabelsName    = "acm_policyreport_labels"
-	descPolicyReportLabelsHelp    = "ACM PolicyReport Labels."
+	descPolicyReportLabelsName    = "acm_policyreport_info"
+	descPolicyReportLabelsHelp    = "ACM PolicyReport Info."
 	descPolicyReportDefaultLabels = []string{"cluster_name", "category", "policy", "result"}
 
 	policyReportGvr = schema.GroupVersionResource{
@@ -34,7 +34,7 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 			Type: metric.MetricTypeGauge,
 			Help: descPolicyReportLabelsHelp,
 			GenerateFunc: wrapPolicyReportFunc(func(prObj *unstructured.Unstructured) metric.Family {
-				klog.Infof("Wrapper %s", prObj.GetName())
+				klog.Infof("Cluster Name %s", prObj.GetName())
 				pr := &v1alpha2.PolicyReport{}
 				err := runtime.DefaultUnstructuredConverter.FromUnstructured(prObj.UnstructuredContent(), &pr)
 				if err != nil {
@@ -94,6 +94,9 @@ func createPolicyReportListWatchWithClient(client dynamic.Interface, ns string) 
 
 func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 	var metrics [][]string
+	if clusterID == "" {
+		return metrics
+	}
 	category, policy, result := "", "", ""
 	for _, reportResult := range pr.Results {
 		var metric []string
@@ -103,7 +106,7 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 		if reportResult.Result != "" {
 			result = string(reportResult.Result)
 		}
-		if reportResult.Policy != "" {
+		if reportResult.Policy != "" && category != "" && result != "" {
 			policy = reportResult.Policy
 			metric = append(metric, clusterID, category, policy, result)
 			metrics = append(metrics, metric)
