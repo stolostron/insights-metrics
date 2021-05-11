@@ -17,6 +17,8 @@ type Options struct {
 	Host            string
 	TelemetryPort   int
 	TelemetryHost   string
+	TLSCrtFile      string
+	TLSKeyFile      string
 	Collectors      koptions.CollectorSet
 	Namespaces      koptions.NamespaceList
 	MetricBlacklist koptions.MetricSet
@@ -54,6 +56,8 @@ func (o *Options) AddFlags() {
 	flag.StringVar(&o.Host, "host", "0.0.0.0", `Host to expose metrics on.`)
 	flag.IntVar(&o.TelemetryPort, "telemetry-port", 81, `Port to expose openshift-state-metrics self metrics on.`)
 	flag.StringVar(&o.TelemetryHost, "telemetry-host", "0.0.0.0", `Host to expose openshift-state-metrics self metrics on.`)
+	flag.StringVar(&o.TLSCrtFile, "tls-crt-file", "", `TLS certificate file path.`)
+	flag.StringVar(&o.TLSKeyFile, "tls-key-file", "", `TLS key file path.`)
 	flag.Var(&o.Collectors, "collectors", fmt.Sprintf("Comma-separated list of collectors to be enabled. Defaults to %q", &DefaultCollectors))
 	flag.Var(&o.Namespaces, "namespace", fmt.Sprintf("Comma-separated list of namespaces to be enabled. Defaults to %q", &DefaultNamespaces))
 	flag.Var(&o.MetricWhitelist, "metric-whitelist", "Comma-separated list of metrics to be exposed. The whitelist and blacklist are mutually exclusive.")
