@@ -110,7 +110,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(`<html>
-             <head><title>openshift-State-Metrics Metrics Server</title></head>
+             <head><title>insights-metrics Metrics Server</title></head>
              <body>
              <h1>openshift-State-Metrics Metrics</h1>
 			 <ul>
@@ -124,7 +124,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting insights-metrics self metrics tls server: %s", listenAddress)
 		klog.Infof("Listening https: %s", listenAddress)
-		go func() { log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux)) }()
+		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
 	} else {
 		log.Fatal(http.ListenAndServe(listenAddress, mux))
 	}
@@ -160,7 +160,7 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(`<html>
-             <head><title>OpenShift Metrics Server</title></head>
+             <head><title>Insights Metrics Server</title></head>
              <body>
              <h1>Kube Metrics</h1>
 			 <ul>
@@ -175,7 +175,7 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting metrics server: %s", listenAddress)
 		klog.Infof("Listening https: %s", listenAddress)
-		go func() { log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux)) }()
+		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
 	} else {
 		log.Fatal(http.ListenAndServe(listenAddress, mux))
 	}
