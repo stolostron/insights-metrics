@@ -18,12 +18,11 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	kcollectors "k8s.io/kube-state-metrics/pkg/collector"
-	koptions "k8s.io/kube-state-metrics/pkg/options"
-	"k8s.io/kube-state-metrics/pkg/whiteblacklist"
-
 	ocollectors "github.com/open-cluster-management/insights-metrics/pkg/collectors"
 	"github.com/open-cluster-management/insights-metrics/pkg/options"
+	metricsstore "k8s.io/kube-state-metrics/pkg/metrics_store"
+	koptions "k8s.io/kube-state-metrics/pkg/options"
+	"k8s.io/kube-state-metrics/pkg/whiteblacklist"
 )
 
 const (
@@ -132,7 +131,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 }
 
 // TODO: How about accepting an interface Collector instead?
-func serveMetrics(collectors []*kcollectors.Collector, host string, port int, enableGZIPEncoding bool, tlsCrtFile string,
+func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int, enableGZIPEncoding bool, tlsCrtFile string,
 	tlsKeyFile string) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
@@ -183,7 +182,7 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 }
 
 type metricHandler struct {
-	collectors         []*kcollectors.Collector
+	collectors         []*metricsstore.MetricsStore
 	enableGZIPEncoding bool
 }
 
@@ -208,11 +207,13 @@ func (m *metricHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, c := range m.collectors {
-		c.Collect(w)
+		c.WriteAll(w)
 	}
 
 	// In case we gziped the response, we have to close the writer.
 	if closer, ok := writer.(io.Closer); ok {
-		closer.Close()
+		if err := closer.Close(); err != nil {
+			panic(err)
+		}
 	}
 }
