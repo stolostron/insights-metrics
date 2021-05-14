@@ -91,13 +91,13 @@ func main() {
 	if err := ocmMetricsRegistry.Register(prometheus.NewGoCollector()); err != nil {
 		panic(err)
 	}
-	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort)
+	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort, opts.TLSCrtFile, opts.TLSKeyFile)
 
 	collectors := collectorBuilder.Build()
 
-	serveMetrics(collectors, opts.Host, opts.Port, opts.EnableGZIPEncoding)
+	serveMetrics(collectors, opts.Host, opts.Port, opts.EnableGZIPEncoding, opts.TLSCrtFile, opts.TLSKeyFile)
 }
-func telemetryServer(registry prometheus.Gatherer, host string, port int) {
+func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrtFile string, tlsKeyFile string) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
 
@@ -110,7 +110,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int) {
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(`<html>
-             <head><title>openshift-State-Metrics Metrics Server</title></head>
+             <head><title>insights-metrics Metrics Server</title></head>
              <body>
              <h1>openshift-State-Metrics Metrics</h1>
 			 <ul>
@@ -121,11 +121,19 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int) {
 			panic(err)
 		}
 	})
-	log.Fatal(http.ListenAndServe(listenAddress, mux))
+	if tlsCrtFile != "" && tlsKeyFile != "" {
+		klog.Infof("Starting insights-metrics self metrics tls server: %s", listenAddress)
+		klog.Infof("Listening https: %s", listenAddress)
+		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
+	} else {
+		log.Fatal(http.ListenAndServe(listenAddress, mux))
+	}
+
 }
 
 // TODO: How about accepting an interface Collector instead?
-func serveMetrics(collectors []*kcollectors.Collector, host string, port int, enableGZIPEncoding bool) {
+func serveMetrics(collectors []*kcollectors.Collector, host string, port int, enableGZIPEncoding bool, tlsCrtFile string,
+	tlsKeyFile string) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
 
@@ -152,7 +160,7 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 	// Add index
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := w.Write([]byte(`<html>
-             <head><title>OpenShift Metrics Server</title></head>
+             <head><title>Insights Metrics Server</title></head>
              <body>
              <h1>Kube Metrics</h1>
 			 <ul>
@@ -164,7 +172,14 @@ func serveMetrics(collectors []*kcollectors.Collector, host string, port int, en
 			panic(err)
 		}
 	})
-	log.Fatal(http.ListenAndServe(listenAddress, mux))
+	if tlsCrtFile != "" && tlsKeyFile != "" {
+		klog.Infof("Starting metrics server: %s", listenAddress)
+		klog.Infof("Listening https: %s", listenAddress)
+		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
+	} else {
+		log.Fatal(http.ListenAndServe(listenAddress, mux))
+	}
+
 }
 
 type metricHandler struct {
