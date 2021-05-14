@@ -13,7 +13,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
-	"k8s.io/kube-state-metrics/pkg/collector"
 	metricsstore "k8s.io/kube-state-metrics/pkg/metrics_store"
 )
 
@@ -78,12 +77,12 @@ func (b *Builder) WithWhiteBlackList(l whiteBlackLister) *Builder {
 }
 
 // Build initializes and registers all enabled collectors.
-func (b *Builder) Build() []*collector.Collector {
+func (b *Builder) Build() []*metricsstore.MetricsStore {
 	if b.whiteBlackList == nil {
 		panic("whiteBlackList should not be nil")
 	}
 
-	collectors := []*collector.Collector{}
+	collectors := []*metricsstore.MetricsStore{}
 	activeCollectorNames := []string{}
 
 	for _, c := range b.enabledCollectors {
@@ -103,11 +102,11 @@ func (b *Builder) Build() []*collector.Collector {
 	return collectors
 }
 
-var availableCollectors = map[string]func(f *Builder) *collector.Collector{
-	"policyreports": func(b *Builder) *collector.Collector { return b.buildPolicyReportCollector() },
+var availableCollectors = map[string]func(f *Builder) *metricsstore.MetricsStore{
+	"policyreports": func(b *Builder) *metricsstore.MetricsStore { return b.buildPolicyReportCollector() },
 }
 
-func (b *Builder) buildPolicyReportCollector() *collector.Collector {
+func (b *Builder) buildPolicyReportCollector() *metricsstore.MetricsStore {
 	config, err := clientcmd.BuildConfigFromFlags(b.apiserver, b.kubeconfig)
 	if err != nil {
 		klog.Fatalf("cannot create Dynamic client: %v", err)
@@ -116,7 +115,7 @@ func (b *Builder) buildPolicyReportCollector() *collector.Collector {
 	return b.buildPolicyReportCollectorWithClient(client)
 }
 
-func (b *Builder) buildPolicyReportCollectorWithClient(client dynamic.Interface) *collector.Collector {
+func (b *Builder) buildPolicyReportCollectorWithClient(client dynamic.Interface) *metricsstore.MetricsStore {
 	filteredMetricFamilies := metric.FilterMetricFamilies(b.whiteBlackList,
 		getPolicyReportMetricFamilies(client))
 	composedMetricGenFuncs := metric.ComposeMetricGenFuncs(filteredMetricFamilies)
@@ -130,7 +129,7 @@ func (b *Builder) buildPolicyReportCollectorWithClient(client dynamic.Interface)
 	reflectorPerNamespace(b.ctx, &unstructured.Unstructured{}, store,
 		b.apiserver, b.kubeconfig, b.namespaces, createPolicyReportListWatch)
 
-	return collector.NewCollector(store)
+	return store
 }
 
 // reflectorPerNamespace creates a Kubernetes client-go reflector with the given
