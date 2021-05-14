@@ -68,9 +68,9 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 
 func wrapPolicyReportFunc(f func(*unstructured.Unstructured) metric.Family) func(interface{}) *metric.Family {
 	return func(obj interface{}) *metric.Family {
-		Cluster := obj.(*unstructured.Unstructured)
+		PolicyReport := obj.(*unstructured.Unstructured)
 
-		metricFamily := f(Cluster)
+		metricFamily := f(PolicyReport)
 
 		for _, m := range metricFamily.Metrics {
 			m.LabelKeys = append([]string{}, m.LabelKeys...)
