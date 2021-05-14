@@ -31,7 +31,7 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 	return []metric.FamilyGenerator{
 		{
 			Name: descPolicyReportLabelsName,
-			Type: metric.MetricTypeGauge,
+			Type: metric.Gauge,
 			Help: descPolicyReportLabelsHelp,
 			GenerateFunc: wrapPolicyReportFunc(func(prObj *unstructured.Unstructured) metric.Family {
 				klog.Infof("Cluster Name %s", prObj.GetName())
@@ -59,15 +59,15 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 					})
 				}
 
-				klog.Infof("Returning %v", f)
+				klog.Infof("Returning %v", string(f.ByteSlice()))
 				return f
 			}),
 		},
 	}
 }
 
-func wrapPolicyReportFunc(f func(*unstructured.Unstructured) metric.Family) func(interface{}) metric.Family {
-	return func(obj interface{}) metric.Family {
+func wrapPolicyReportFunc(f func(*unstructured.Unstructured) metric.Family) func(interface{}) *metric.Family {
+	return func(obj interface{}) *metric.Family {
 		PolicyReport := obj.(*unstructured.Unstructured)
 
 		metricFamily := f(PolicyReport)
@@ -77,7 +77,7 @@ func wrapPolicyReportFunc(f func(*unstructured.Unstructured) metric.Family) func
 			m.LabelValues = append([]string{}, m.LabelValues...)
 		}
 
-		return metricFamily
+		return &metricFamily
 	}
 }
 
