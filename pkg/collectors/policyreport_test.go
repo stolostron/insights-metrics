@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"testing"
 
+	mcv1 "github.com/open-cluster-management/api/cluster/v1"
+	ocinfrav1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -22,7 +24,30 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 	s := scheme.Scheme
 
 	s.AddKnownTypes(pr.SchemeGroupVersion, &pr.PolicyReport{})
+	s.AddKnownTypes(ocinfrav1.SchemeGroupVersion, &ocinfrav1.ClusterVersion{})
+	s.AddKnownTypes(mcv1.SchemeGroupVersion, &mcv1.ManagedCluster{})
+	version := &ocinfrav1.ClusterVersion{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "version",
+		},
+		Spec: ocinfrav1.ClusterVersionSpec{
+			ClusterID: "mycluster_id",
+		},
+	}
 
+	mc := &mcv1.ManagedCluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "managed-cluster",
+		},
+		Status: mcv1.ManagedClusterStatus{
+			ClusterClaims: []mcv1.ManagedClusterClaim{
+				{
+					Name:  "id.openshift.io",
+					Value: "managed-cluster",
+				},
+			},
+		},
+	}
 	pri := &pr.PolicyReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "local-cluster",
@@ -42,11 +67,34 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 		t.Error(err)
 	}
 
-	client := fake.NewSimpleDynamicClient(s, prU)
+	prm := &pr.PolicyReport{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "managed-cluster",
+			Namespace: "maanged-cluster",
+		},
+		Results: []*pr.PolicyReportResult{
+			{
+				Category: "service_availability",
+				Policy:   "MASTER_DEFINED_AS_MACHINESET",
+				Result:   "skip",
+			},
+		},
+	}
+	prUM := &unstructured.Unstructured{}
+	err = scheme.Scheme.Convert(prm, prUM, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	client := fake.NewSimpleDynamicClient(s, prU, prUM, version, mc)
 	tests := []generateMetricsTestCase{
 		{
 			Obj:  prU,
-			Want: `acm_policyreport_info{cluster_name="local-cluster",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail"} 1`,
+			Want: `acm_policyreport_info{cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail"} 1`,
+		},
+		{
+			Obj:  prUM,
+			Want: `acm_policyreport_info{cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip"} 1`,
 		},
 	}
 	for i, c := range tests {

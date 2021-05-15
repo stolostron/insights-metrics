@@ -94,6 +94,9 @@ func createPolicyReportListWatchWithClient(client dynamic.Interface, ns string) 
 
 func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 	var metrics [][]string
+	if clusterID == "" {
+		return metrics
+	}
 	category, policy, result := "", "", ""
 	for _, reportResult := range pr.Results {
 		var metric []string
