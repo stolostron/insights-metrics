@@ -3,6 +3,8 @@ module github.com/open-cluster-management/insights-metrics
 go 1.16
 
 require (
+	github.com/open-cluster-management/api v0.0.0-20210513122330-d76f10481f05
+	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
 	github.com/prometheus/client_golang v1.7.1
 	golang.org/x/net v0.0.0-20210224082022-3d97a244fca7
 	k8s.io/api v0.21.0
