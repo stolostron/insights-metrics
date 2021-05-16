@@ -44,6 +44,7 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 				_, errPR := client.Resource(policyReportGvr).Namespace(pr.GetName()).Get(context.TODO(), pr.GetName(), metav1.GetOptions{})
 				if errPR != nil {
 					klog.Infof("PolicyReport %s not found, err: %s", pr.GetName(), errPR)
+					return metric.Family{Metrics: []*metric.Metric{}}
 				}
 				clusterName := pr.GetName()
 				clusterId := getClusterID(client, clusterName)

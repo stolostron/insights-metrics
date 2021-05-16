@@ -70,7 +70,7 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 	prm := &pr.PolicyReport{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "managed-cluster",
-			Namespace: "maanged-cluster",
+			Namespace: "managed-cluster",
 		},
 		Results: []*pr.PolicyReportResult{
 			{
