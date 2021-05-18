@@ -51,26 +51,26 @@ func getClusterID(c dynamic.Interface, clusterName string) string {
 	if clusterName == "local-cluster" {
 		cvObj, errCv := c.Resource(cvGVR).Get(context.TODO(), "version", metav1.GetOptions{})
 		if errCv != nil {
-			klog.Fatalf("Error getting cluster version %v \n", errCv)
+			klog.Warningf("Error getting cluster version %v \n", errCv)
 			return clusterId
 		}
 		cv := &ocinfrav1.ClusterVersion{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(cvObj.UnstructuredContent(), &cv)
 		if err != nil {
-			klog.Fatalf("Error unmarshal cluster version object%v \n", err)
+			klog.Warningf("Error unmarshal cluster version object%v \n", err)
 			return clusterId
 		}
 		return string(cv.Spec.ClusterID)
 	} else {
 		mcObj, errMc := c.Resource(mcGVR).Get(context.TODO(), clusterName, metav1.GetOptions{})
 		if errMc != nil {
-			klog.Fatalf("Error getting ManagedCluster %v \n", errMc)
+			klog.Warningf("Error getting ManagedCluster %v \n", errMc)
 			return clusterId
 		}
 		mc := &clusterv1.ManagedCluster{}
 		err := runtime.DefaultUnstructuredConverter.FromUnstructured(mcObj.UnstructuredContent(), &mc)
 		if err != nil {
-			klog.Fatalf("Error unmarshal ManagedCluster object%v \n", err)
+			klog.Warningf("Error unmarshal ManagedCluster object%v \n", err)
 			return clusterId
 		}
 		for _, claimInfo := range mc.Status.ClusterClaims {
