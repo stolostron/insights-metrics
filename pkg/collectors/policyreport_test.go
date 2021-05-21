@@ -58,6 +58,9 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 				Category: "openshift,configuration,service_availability",
 				Policy:   "MASTER_DEFINED_AS_MACHINESET",
 				Result:   "fail",
+				Properties: map[string]string{
+					"total_risk": "4",
+				},
 			},
 		},
 	}
@@ -77,6 +80,9 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 				Category: "service_availability",
 				Policy:   "MASTER_DEFINED_AS_MACHINESET",
 				Result:   "skip",
+				Properties: map[string]string{
+					"total_risk": "3",
+				},
 			},
 		},
 	}
@@ -90,11 +96,11 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 	tests := []generateMetricsTestCase{
 		{
 			Obj:  prU,
-			Want: `acm_policyreport_info{cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail"} 1`,
+			Want: `acm_policyreport_info{cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
 		},
 		{
 			Obj:  prUM,
-			Want: `acm_policyreport_info{cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip"} 1`,
+			Want: `acm_policyreport_info{cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
 		},
 	}
 	for i, c := range tests {
@@ -129,7 +135,9 @@ func Test_createPolicyReportListWatchWithClient(t *testing.T) {
 				Timestamp:   metav1.Timestamp{},
 				Scored:      false,
 				Description: "test",
-				Properties:  map[string]string{},
+				Properties: map[string]string{
+					"total_risk": "3",
+				},
 			},
 		},
 	}

@@ -18,7 +18,7 @@ import (
 var (
 	descPolicyReportLabelsName    = "acm_policyreport_info"
 	descPolicyReportLabelsHelp    = "ACM PolicyReport Info."
-	descPolicyReportDefaultLabels = []string{"cluster_id", "category", "policy", "result"}
+	descPolicyReportDefaultLabels = []string{"cluster_id", "category", "policy", "result", "severity"}
 
 	policyReportGvr = schema.GroupVersionResource{
 		Group:    "wgpolicyk8s.io",
@@ -98,7 +98,7 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 	if clusterID == "" {
 		return metrics
 	}
-	category, policy, result := "", "", ""
+	category, policy, result, severity := "", "", "", ""
 	for _, reportResult := range pr.Results {
 		var metric []string
 		if reportResult.Category != "" {
@@ -107,9 +107,21 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 		if reportResult.Result != "" {
 			result = string(reportResult.Result)
 		}
-		if reportResult.Policy != "" && category != "" && result != "" {
+		switch risk := reportResult.Properties["total_risk"]; risk {
+		case "4":
+			severity = "critical"
+		case "3":
+			severity = "important"
+		case "2":
+			severity = "moderate"
+		case "1":
+			severity = "low"
+		default:
+			severity = ""
+		}
+		if reportResult.Policy != "" && category != "" && result != "" && severity != "" {
 			policy = reportResult.Policy
-			metric = append(metric, clusterID, category, policy, result)
+			metric = append(metric, clusterID, category, policy, result, severity)
 			metrics = append(metrics, metric)
 		}
 
