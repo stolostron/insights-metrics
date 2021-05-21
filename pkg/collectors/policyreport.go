@@ -34,19 +34,19 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 			Type: metric.Gauge,
 			Help: descPolicyReportLabelsHelp,
 			GenerateFunc: wrapPolicyReportFunc(func(prObj *unstructured.Unstructured) metric.Family {
-				klog.Infof("Cluster Name %s", prObj.GetName())
+				klog.Infof("Cluster Name %s", prObj.GetNamespace())
 				pr := &v1alpha2.PolicyReport{}
 				err := runtime.DefaultUnstructuredConverter.FromUnstructured(prObj.UnstructuredContent(), &pr)
 				if err != nil {
 					klog.Infof("Error unstructuring PolicyReport ")
 					return metric.Family{Metrics: []*metric.Metric{}}
 				}
-				_, errPR := client.Resource(policyReportGvr).Namespace(pr.GetName()).Get(context.TODO(), pr.GetName(), metav1.GetOptions{})
+				_, errPR := client.Resource(policyReportGvr).Namespace(pr.GetNamespace()).Get(context.TODO(), pr.GetName(), metav1.GetOptions{})
 				if errPR != nil {
 					klog.Infof("PolicyReport %s not found, err: %s", pr.GetName(), errPR)
 					return metric.Family{Metrics: []*metric.Metric{}}
 				}
-				clusterName := pr.GetName()
+				clusterName := pr.GetNamespace()
 				clusterId := getClusterID(client, clusterName)
 				metrics := getReports(clusterId, pr)
 
