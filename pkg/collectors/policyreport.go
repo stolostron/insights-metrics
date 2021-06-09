@@ -34,7 +34,7 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 			Type: metric.Gauge,
 			Help: descPolicyReportLabelsHelp,
 			GenerateFunc: wrapPolicyReportFunc(func(prObj *unstructured.Unstructured) metric.Family {
-				klog.Infof("Cluster Name %s", prObj.GetNamespace())
+				klog.Infof("Getting PolicyReport Info for Cluster Name %s with name %s", prObj.GetNamespace(), prObj.GetName())
 				pr := &v1alpha2.PolicyReport{}
 				err := runtime.DefaultUnstructuredConverter.FromUnstructured(prObj.UnstructuredContent(), &pr)
 				if err != nil {
