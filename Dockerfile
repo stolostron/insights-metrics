@@ -33,7 +33,6 @@ LABEL org.label-schema.vendor="Red Hat" \
 
 RUN microdnf update &&\
     microdnf install ca-certificates vi --nodocs &&\
-    mkdir /licenses &&\
     microdnf clean all
 
 ENV VCS_REF="$VCS_REF" \
