@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	descPolicyReportLabelsName    = "acm_policyreport_info"
-	descPolicyReportLabelsHelp    = "ACM PolicyReport Info."
+	descPolicyReportLabelsName    = "open_cluster_mgmt_policyreport_info"
+	descPolicyReportLabelsHelp    = "Open Cluster Management PolicyReport Info."
 	descPolicyReportDefaultLabels = []string{"cluster_id", "category", "policy", "result", "severity"}
 
 	policyReportGvr = schema.GroupVersionResource{
