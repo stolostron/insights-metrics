@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	descPolicyReportLabelsName    = "open_cluster_mgmt_policyreport_info"
+	descPolicyReportLabelsName    = "policyreport_info"
 	descPolicyReportLabelsHelp    = "Open Cluster Management PolicyReport Info."
 	descPolicyReportDefaultLabels = []string{"cluster_id", "category", "policy", "result", "severity"}
 
