@@ -96,11 +96,11 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 	tests := []generateMetricsTestCase{
 		{
 			Obj:  prU,
-			Want: `acm_policyreport_info{cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
+			Want: `policyreport_info{cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
 		},
 		{
 			Obj:  prUM,
-			Want: `acm_policyreport_info{cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
+			Want: `policyreport_info{cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
 		},
 	}
 	for i, c := range tests {
