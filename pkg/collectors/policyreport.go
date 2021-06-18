@@ -18,7 +18,7 @@ import (
 var (
 	descPolicyReportLabelsName    = "policyreport_info"
 	descPolicyReportLabelsHelp    = "Open Cluster Management PolicyReport Info."
-	descPolicyReportDefaultLabels = []string{"cluster_id", "category", "policy", "result", "severity"}
+	descPolicyReportDefaultLabels = []string{"managed_cluster_id", "category", "policy", "result", "severity"}
 
 	policyReportGvr = schema.GroupVersionResource{
 		Group:    "wgpolicyk8s.io",
