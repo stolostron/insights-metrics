@@ -10,12 +10,6 @@ go:
 services:
   - docker
 
-addons:
-  sonarcloud:
-    organization: "open-cluster-management"
-    token:
-      secure: "MI3WWiJuh38YtX43/r/rp9FzYt3DWMLsKbCYVheNnrG0u7xo8tfX8/o9LND0oJeKV7LEUnLfY3p1VKeRrTKPL+Oh/KuEM/wG0NoZoYt68muutYzk7JfCi0f2p90CxVYlPGU6AZkvJzRRA+VXDKUQVW9/zQGNjFILivnMjtfkhPurYxqP/GTwjOd/vJbpjYfwNvM/CeznLzSzFWfYexJq93L9txfirdj5EhkmUnQqYnsJaplCxO9ZtC70Yd4xfMgDUVoIiK4AWGPiXoQcdSR4b8bEQrVWwjaz4lxPtF0c0hwKfnRXz9pZM71oMmZTzgCUF5P2IZaorr7VPUBikApoi5xoowIDuFjGAnlqUqGlrPHy9Rgbl1cgBXTiva0G7es+EeNkLUgNqwCAMZQxnOcjjwO4ZZ9/G179NDvJ9MPX7yHFzyk6muC4Y3Gs3MuH85PyYh9QlgWTYvU43ZUhhu1sEcjb/zDiY0c8X0KK6ZPofDKXji1ckfRNRhFunTJeyYFLwW1qZdftkiIhWYT6K70W8aZaxJv3Wr8/IjmgxvYubje5gyt+xCqqNGbtOGpN38UiCnBNdCj42RFUjRRj92QMMxnsGCkr2k3LhKqQkpZ9L4tX+Ookn+7diSAIB2bD/EXMc5fkhDzWEOaKkZSpA0HKoZc4a+R6Rcegz2WO4nu7+yc="
-
 branches:
   only:
     - main
@@ -38,8 +32,6 @@ stages:
   - build
   - unit-test
   - test-e2e
-  - release-ff
-  - publish
 
 before_script:
   # Bootstrap the build harness.
@@ -69,16 +61,3 @@ jobs:
         # Bootstrap the build harness, pull test image, and run unit tests.  
         - make component/test/unit
         - make security/scans
-        - make sonar/go  
-
-    - stage: release-ff
-      name: "Push commits to current release branch"
-      if: type = push AND branch =~ /^main$/
-      script:
-        - make release-ff
-
-    - stage: publish
-      name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
-      if: type = push AND branch =~ /^release-[0-9]+\..*$/
-      script:
-        - make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}
