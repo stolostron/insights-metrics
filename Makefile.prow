@@ -1,0 +1,11 @@
+# Copyright Contributors to the Open Cluster Management project
+
+-include /opt/build-harness/Makefile.prow
+
+.PHONY: build
+build:
+	CGO_ENABLED=0 go build -a -v -i -installsuffix cgo -ldflags '-s -w' -o $(BINDIR)/insights-metrics ./
+
+.PHONY: unit-test
+unit-test:
+	go test ./... -v -coverprofile cover.out
