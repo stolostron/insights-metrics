@@ -1,3 +1,9 @@
+FROM registry.ci.openshift.org/open-cluster-management/builder:go1.16-linux AS builder
+
+WORKDIR /go/src/github.com/open-cluster-management/insights-metrics
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -o main main.go
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4
 
 ARG VCS_REF
