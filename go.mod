@@ -10,7 +10,6 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/open-cluster-management/api v0.0.0-20210527013639-a6845f2ebcb1
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.30.0 // indirect
@@ -28,6 +27,7 @@ require (
 	k8s.io/klog/v2 v2.20.0
 	k8s.io/kube-state-metrics v1.9.8
 	k8s.io/utils v0.0.0-20210820185131-d34e5cb4466e // indirect
+	open-cluster-management.io/api v0.0.0-20210916013819-2e58cdb938f9
 	sigs.k8s.io/controller-runtime v0.10.0 // indirect
 	sigs.k8s.io/wg-policy-prototypes v0.0.0-20210911211205-fb8f67bb6d38
 )
