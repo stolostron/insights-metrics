@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog/v2"
 	"k8s.io/kube-state-metrics/pkg/metric"
-	"sigs.k8s.io/wg-policy-prototypes/policy-report/api/v1alpha2"
+	"sigs.k8s.io/wg-policy-prototypes/policy-report/pkg/api/wgpolicyk8s.io/v1alpha2"
 )
 
 var (
