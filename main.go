@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/klog/v2"
 
@@ -84,10 +85,10 @@ func main() {
 	if err := ocmMetricsRegistry.Register(ocollectors.ScrapeErrorTotalMetric); err != nil {
 		panic(err)
 	}
-	if err := ocmMetricsRegistry.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{})); err != nil {
+	if err := ocmMetricsRegistry.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
 		panic(err)
 	}
-	if err := ocmMetricsRegistry.Register(prometheus.NewGoCollector()); err != nil {
+	if err := ocmMetricsRegistry.Register(collectors.NewGoCollector()); err != nil {
 		panic(err)
 	}
 	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort, opts.TLSCrtFile, opts.TLSKeyFile)

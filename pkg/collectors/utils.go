@@ -6,7 +6,7 @@ package collectors
 import (
 	"context"
 
-	clusterv1 "github.com/open-cluster-management/api/cluster/v1"
+	clusterv1 "open-cluster-management.io/api/cluster/v1"
 	ocinfrav1 "github.com/openshift/api/config/v1"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
