@@ -117,9 +117,9 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 		case "1":
 			severity = "low"
 		default:
-			severity = ""
+			severity = "unknown"
 		}
-		if reportResult.Policy != "" && category != "" && result != "" && severity != "" {
+		if reportResult.Policy != "" && category != "" && result != "" {
 			policy = reportResult.Policy
 			metric = append(metric, clusterID, category, policy, result, severity)
 			metrics = append(metrics, metric)
