@@ -395,8 +395,8 @@ github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7J
 github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=
 github.com/onsi/gomega v1.10.2 h1:aY/nuoWlKJud2J6U0E3NWsjlg+0GtwXxgEqthRdzlcs=
 github.com/onsi/gomega v1.10.2/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=
-github.com/open-cluster-management/api v0.0.0-20210513122330-d76f10481f05 h1:djYyfpgsbRg/GUizlPHaemlmkS77N+ZCB9HmJGLpFVw=
-github.com/open-cluster-management/api v0.0.0-20210513122330-d76f10481f05/go.mod h1:ot+A1DWq+v1IV+e1S7nhIteYAmNByFgtazvzpoeAfRQ=
+github.com/stolostron/api v0.0.0-20210513122330-d76f10481f05 h1:djYyfpgsbRg/GUizlPHaemlmkS77N+ZCB9HmJGLpFVw=
+github.com/stolostron/api v0.0.0-20210513122330-d76f10481f05/go.mod h1:ot+A1DWq+v1IV+e1S7nhIteYAmNByFgtazvzpoeAfRQ=
 github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible h1:AvJ2SgJ7ekSlEL/wyeVMffxDkbKohp4JLge9wMtT23o=
 github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible/go.mod h1:dh9o4Fs58gpFXGSYfnVxGR9PnV53I8TW84pQaJDdGiY=
 github.com/openshift/build-machinery-go v0.0.0-20210115170933-e575b44a7a94/go.mod h1:b1BuldmJlbA/xYtdZvKi+7j5YGB44qJUJDZ9zwiNCfE=
