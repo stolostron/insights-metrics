@@ -1,3 +1,9 @@
+FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
+
+WORKDIR /go/src/github.com/open-cluster-management/insights-metrics
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -o insights-metrics main.go
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.4
 
 ARG VCS_REF
@@ -39,9 +45,7 @@ ENV VCS_REF="$VCS_REF" \
     USER_UID=1001
 
 
-
-ADD output/insights-metrics /bin
-
+COPY --from=builder /go/src/github.com/open-cluster-management/insights-metrics/insights-metrics /bin
 
 EXPOSE 3031
 USER ${USER_UID}
