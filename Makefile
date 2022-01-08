@@ -30,7 +30,7 @@ build: insights-metrics
 
 .PHONY: build-linux
 build-linux:
-	make insights-client GOOS=linux
+	make insights-metrics GOOS=linux
 
 .PHONY: lint
 lint:

@@ -5,7 +5,7 @@ output/
 build-harness/
 build-harness-extensions/
 .build-harness-bootstrap
-insights-client
+insights-metrics
 !vbh/.build-harness-vendorized
 !vbh/build-harness
 !vbh/build-harness-extensions
