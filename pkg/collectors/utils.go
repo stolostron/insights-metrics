@@ -8,12 +8,12 @@ import (
 
 	ocinfrav1 "github.com/openshift/api/config/v1"
 	"github.com/prometheus/client_golang/prometheus"
-	clusterv1 "github.com/stolostron/api/cluster/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/klog/v2"
+	clusterv1 "open-cluster-management.io/api/cluster/v1"
 )
 
 var (
