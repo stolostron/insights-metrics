@@ -1,6 +1,6 @@
-FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.17-linux AS builder
 
-WORKDIR /go/src/github.com/open-cluster-management/insights-metrics
+WORKDIR /go/src/github.com/stolostron/insights-metrics
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -o insights-metrics main.go
 
@@ -45,7 +45,7 @@ ENV VCS_REF="$VCS_REF" \
     USER_UID=1001
 
 
-COPY --from=builder /go/src/github.com/open-cluster-management/insights-metrics/insights-metrics /bin
+COPY --from=builder /go/src/github.com/stolostron/insights-metrics/insights-metrics /bin
 
 EXPOSE 3031
 USER ${USER_UID}
