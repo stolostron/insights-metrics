@@ -23,7 +23,7 @@ func TestBuilder_WithApiserver(t *testing.T) {
 		namespaces        koptions.NamespaceList
 		ctx               context.Context
 		enabledCollectors []string
-		whiteBlackList    whiteBlackLister
+		allowDenyList     whiteBlackLister
 	}
 	type args struct {
 		apiserver string
@@ -63,7 +63,7 @@ func TestBuilder_WithApiserver(t *testing.T) {
 				namespaces:        tt.fields.namespaces,
 				ctx:               tt.fields.ctx,
 				enabledCollectors: tt.fields.enabledCollectors,
-				whiteBlackList:    tt.fields.whiteBlackList,
+				whiteBlackList:    tt.fields.allowDenyList,
 			}
 			if got := b.WithApiserver(tt.args.apiserver); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Builder.WithApiserver() = %v, want %v", got, tt.want)
