@@ -18,8 +18,8 @@ import (
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	ocollectors "github.com/open-cluster-management/insights-metrics/pkg/collectors"
-	"github.com/open-cluster-management/insights-metrics/pkg/options"
+	ocollectors "github.com/stolostron/insights-metrics/pkg/collectors"
+	"github.com/stolostron/insights-metrics/pkg/options"
 	metricsstore "k8s.io/kube-state-metrics/pkg/metrics_store"
 	koptions "k8s.io/kube-state-metrics/pkg/options"
 	"k8s.io/kube-state-metrics/pkg/whiteblacklist"

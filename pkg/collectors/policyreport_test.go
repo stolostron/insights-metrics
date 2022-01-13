@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	mcv1 "github.com/open-cluster-management/api/cluster/v1"
 	ocinfrav1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,6 +16,7 @@ import (
 	"k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kube-state-metrics/pkg/metric"
+	mcv1 "open-cluster-management.io/api/cluster/v1"
 	pr "sigs.k8s.io/wg-policy-prototypes/policy-report/api/v1alpha2"
 )
 
