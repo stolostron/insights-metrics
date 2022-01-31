@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/insights-metrics
+module github.com/stolostron/insights-metrics
 
 go 1.17
 
