@@ -18,8 +18,7 @@ default::
 
 .PHONY: deps
 deps:
-	 go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.24.0
-	 go mod tidy
+	go mod tidy
 
 .PHONY: insights-metrics
 insights-metrics:
@@ -34,7 +33,7 @@ build-linux:
 
 .PHONY: lint
 lint:
-	 golangci-lint run --timeout=2m
+	build/run-lint-check.sh
 
 run:
 	 go run main.go
