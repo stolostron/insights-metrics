@@ -1,6 +1,6 @@
 module github.com/stolostron/insights-metrics
 
-go 1.17
+go 1.18
 
 require (
 	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
