@@ -3,7 +3,4 @@
 The insights-metrics  will create metrics from PolicyReport CRs and exposes as metrics API for local Prometheus.
 This project is heavily influenced from <https://github.com/openshift/openshift-state-metrics>
 
-Rebuild Date: 2022-01-07
-
-
-Rebuild: 2022-05-13
+Rebuild Date: Thu Aug 18 13:02:45 EDT 2022
