@@ -123,12 +123,16 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 			panic(err)
 		}
 	})
+	server := &http.Server{
+		Addr:              listenAddress,
+		ReadHeaderTimeout: 5 * time.Minute,
+	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting insights-metrics self metrics tls server: %s", listenAddress)
 		klog.Infof("Listening https: %s", listenAddress)
-		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
+		log.Fatal(server.ListenAndServeTLS(tlsCrtFile, tlsKeyFile))
 	} else {
-		log.Fatal(http.ListenAndServe(listenAddress, mux))
+		log.Fatal(server.ListenAndServe())
 	}
 
 }
@@ -174,12 +178,16 @@ func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int
 			panic(err)
 		}
 	})
+	server := &http.Server{
+		Addr:              listenAddress,
+		ReadHeaderTimeout: 5 * time.Minute,
+	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting metrics server: %s", listenAddress)
 		klog.Infof("Listening https: %s", listenAddress)
-		log.Fatal(http.ListenAndServeTLS(listenAddress, tlsCrtFile, tlsKeyFile, mux))
+		log.Fatal(server.ListenAndServeTLS(tlsCrtFile, tlsKeyFile))
 	} else {
-		log.Fatal(http.ListenAndServe(listenAddress, mux))
+		log.Fatal(server.ListenAndServe())
 	}
 
 }
