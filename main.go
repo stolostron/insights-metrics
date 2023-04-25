@@ -126,6 +126,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 	server := &http.Server{
 		Addr:              listenAddress,
 		ReadHeaderTimeout: 5 * time.Minute,
+		Handler:           mux,
 	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting insights-metrics self metrics tls server: %s", listenAddress)
@@ -181,6 +182,7 @@ func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int
 	server := &http.Server{
 		Addr:              listenAddress,
 		ReadHeaderTimeout: 5 * time.Minute,
+		Handler:           mux,
 	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting metrics server: %s", listenAddress)
