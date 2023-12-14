@@ -95,18 +95,20 @@ func createPolicyReportListWatchWithClient(client dynamic.Interface, ns string) 
 
 func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 	var metrics [][]string
+
 	if clusterID == "" {
 		return metrics
 	}
-	category, policy, result, severity := "", "", "", ""
+
 	for _, reportResult := range pr.Results {
-		var metric []string
-		if reportResult.Category != "" {
-			category = reportResult.Category
-		}
+		var severity string
+
+		result := "fail"
+
 		if reportResult.Result != "" {
 			result = string(reportResult.Result)
 		}
+
 		switch risk := reportResult.Properties["total_risk"]; risk {
 		case "4":
 			severity = "critical"
@@ -119,12 +121,17 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 		default:
 			severity = "unknown"
 		}
-		if reportResult.Policy != "" && category != "" && result != "" {
-			policy = reportResult.Policy
-			metric = append(metric, clusterID, category, policy, result, severity)
-			metrics = append(metrics, metric)
-		}
 
+		if reportResult.Policy != "" {
+			metrics = append(metrics, []string{
+				clusterID,
+				reportResult.Category,
+				reportResult.Policy,
+				result,
+				severity,
+			})
+		}
 	}
+
 	return metrics
 }
