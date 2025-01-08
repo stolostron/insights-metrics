@@ -5,9 +5,9 @@ package collectors
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
-	mcv1 "open-cluster-management.io/api/cluster/v1"
 	ocinfrav1 "github.com/openshift/api/config/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kube-state-metrics/pkg/metric"
+	mcv1 "open-cluster-management.io/api/cluster/v1"
 	pr "sigs.k8s.io/wg-policy-prototypes/policy-report/pkg/api/wgpolicyk8s.io/v1alpha2"
 )
 
@@ -92,15 +93,69 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 		t.Error(err)
 	}
 
+	withDuplicates := &pr.PolicyReport{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "PolicyReport",
+			APIVersion: "wgpolicyk8s.io/v1alpha2",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "local-cluster",
+			Namespace: "local-cluster",
+		},
+		Results: []*pr.PolicyReportResult{
+			{
+				Category: "service_availability",
+				Policy:   "MASTER_DEFINED_AS_MACHINESET",
+				Result:   "fail",
+				Properties: map[string]string{
+					"total_risk": "3",
+				},
+			}, { // an exact duplicate of the first:
+				Category: "service_availability",
+				Policy:   "MASTER_DEFINED_AS_MACHINESET",
+				Result:   "fail",
+				Properties: map[string]string{
+					"total_risk": "3",
+				},
+			}, {
+				Category: "other", // different, not a duplicate
+				Policy:   "MASTER_DEFINED_AS_MACHINESET",
+				Result:   "fail",
+				Properties: map[string]string{
+					"total_risk": "3",
+				},
+			}, {
+				Category: "service_availability",
+				Policy:   "MASTER_DEFINED_AS_MACHINESET",
+				Result:   "fail",
+				Properties: map[string]string{
+					"total_risk": "2", // different, not a duplicate
+				},
+			},
+		},
+	}
+
+	prWithDuplicates := &unstructured.Unstructured{}
+	err = scheme.Scheme.Convert(withDuplicates, prWithDuplicates, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
 	client := fake.NewSimpleDynamicClient(s, prU, prUM, version, mc)
 	tests := []generateMetricsTestCase{
 		{
 			Obj:  prU,
 			Want: `policyreport_info{managed_cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
-		},
-		{
+		}, {
 			Obj:  prUM,
 			Want: `policyreport_info{managed_cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
+		}, {
+			Obj: prWithDuplicates,
+			Want: strings.Join([]string{
+				`policyreport_info{managed_cluster_id="mycluster_id",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 2`,
+				`policyreport_info{managed_cluster_id="mycluster_id",category="other",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 1`,
+				`policyreport_info{managed_cluster_id="mycluster_id",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="moderate"} 1`,
+			}, "\n"),
 		},
 	}
 	for i, c := range tests {
@@ -112,7 +167,6 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 }
 
 func Test_createPolicyReportListWatchWithClient(t *testing.T) {
-
 	s := runtime.NewScheme()
 	s.AddKnownTypes(corev1.SchemeGroupVersion, &corev1.Namespace{})
 	s.AddKnownTypes(pr.SchemeGroupVersion, &pr.PolicyReport{})
