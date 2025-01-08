@@ -48,15 +48,14 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 				}
 				clusterName := pr.GetNamespace()
 				clusterId := getClusterID(client, clusterName)
-				metrics := getReports(clusterId, pr)
 
 				f := metric.Family{}
 
-				for _, result := range metrics {
+				for result, val := range getResults(clusterId, pr) {
 					f.Metrics = append(f.Metrics, &metric.Metric{
 						LabelKeys:   descPolicyReportDefaultLabels,
-						LabelValues: result,
-						Value:       1,
+						LabelValues: result.values(),
+						Value:       float64(val),
 					})
 				}
 
@@ -93,11 +92,31 @@ func createPolicyReportListWatchWithClient(client dynamic.Interface, ns string) 
 	}
 }
 
-func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
-	var metrics [][]string
+type metricResult struct {
+	clusterID string
+	category  string
+	policy    string
+	result    string
+	severity  string
+}
+
+func (mr metricResult) values() []string {
+	return []string{
+		mr.clusterID,
+		mr.category,
+		mr.policy,
+		mr.result,
+		mr.severity,
+	}
+}
+
+// getResults extracts the metrics information from the results in the PolicyReport.
+// Since multiple results can share the same name & labels, a count for each is returned.
+func getResults(clusterID string, pr *v1alpha2.PolicyReport) map[metricResult]int {
+	results := make(map[metricResult]int)
 
 	if clusterID == "" {
-		return metrics
+		return results
 	}
 
 	for _, reportResult := range pr.Results {
@@ -123,15 +142,15 @@ func getReports(clusterID string, pr *v1alpha2.PolicyReport) [][]string {
 		}
 
 		if reportResult.Policy != "" {
-			metrics = append(metrics, []string{
-				clusterID,
-				reportResult.Category,
-				reportResult.Policy,
-				result,
-				severity,
-			})
+			results[metricResult{
+				clusterID: clusterID,
+				category:  reportResult.Category,
+				policy:    reportResult.Policy,
+				result:    result,
+				severity:  severity,
+			}] += 1
 		}
 	}
 
-	return metrics
+	return results
 }
