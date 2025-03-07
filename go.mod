@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/openshift/api v3.9.1-0.20191111211345-a27ff30ebf09+incompatible
+	github.com/openshift/api 635291d6fdf1
 	github.com/prometheus/client_golang v1.15.1
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.0 // indirect
