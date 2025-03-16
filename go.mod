@@ -1,6 +1,8 @@
 module github.com/stolostron/insights-metrics
 
-go 1.20
+go 1.23.0
+
+toolchain go1.23.7
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -11,10 +13,10 @@ require (
 	github.com/prometheus/client_golang v1.15.1
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.10.0 // indirect
-	golang.org/x/net v0.33.0
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.37.0
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	k8s.io/api v0.27.2
 	k8s.io/apimachinery v0.27.2
 	k8s.io/client-go v0.27.2
