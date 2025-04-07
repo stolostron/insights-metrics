@@ -20,7 +20,7 @@ require (
 	k8s.io/client-go v0.27.2
 	k8s.io/klog/v2 v2.100.1
 	k8s.io/kube-state-metrics v1.9.8
-	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
+	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e // indirect
 	open-cluster-management.io/api v0.11.0
 	sigs.k8s.io/controller-runtime v0.15.0 // indirect
 	sigs.k8s.io/wg-policy-prototypes v0.0.0-20230505033312-51c21979086a
