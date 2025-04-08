@@ -37,9 +37,6 @@ LABEL org.label-schema.vendor="Red Hat" \
       io.k8s.description="$IMAGE_DESCRIPTION" \
       io.openshift.tags="$IMAGE_OPENSHIFT_TAGS"
 
-RUN microdnf install -y ca-certificates vi --nodocs &&\
-    microdnf clean all
-
 ENV VCS_REF="$VCS_REF" \
     USER_UID=1001
 
