@@ -3,8 +3,6 @@
 
 BINDIR ?= output
 
-include build/Configfile
-
 USE_VENDORIZED_BUILD_HARNESS ?=
 
 ifndef USE_VENDORIZED_BUILD_HARNESS
