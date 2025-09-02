@@ -1,6 +1,6 @@
 module github.com/stolostron/insights-metrics
 
-go 1.23.0
+go 1.24.0
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
