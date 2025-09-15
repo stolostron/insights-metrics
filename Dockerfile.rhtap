@@ -19,7 +19,8 @@ ENTRYPOINT ["/bin/insights-metrics"]
 LABEL com.redhat.component="acm-insights-metrics-container" \
       description="Insights metrics service" \
       maintainer="acm-contact@redhat.com" \
-      name="insights-metrics" \
+      name="rhacm2/insights-metrics-rhel9" \
+      cpe="cpe:/a:redhat:acm:2.14::el9" \
       org.label-schema.license="Red Hat Advanced Cluster Management for Kubernetes EULA" \
       org.label-schema.schema-version="1.0" \
       summary="Insights metrics service" \
