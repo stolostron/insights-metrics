@@ -8,6 +8,7 @@ build:
 
 .PHONY: unit-test
 unit-test:
+    go clean -cache -modcache
 	go test ./... -v -coverprofile cover.out
 
 
