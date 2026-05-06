@@ -1,0 +1,31 @@
+FROM registry-proxy.engineering.redhat.com/rh-osbs/openshift-golang-builder:v1.25.8 AS builder
+
+WORKDIR /go/src/github.com/stolostron/insights-metrics
+COPY . .
+RUN go mod vendor
+RUN CGO_ENABLED=1 GOEXPERIMENT=strictfipsruntime go build -trimpath -o insights-metrics main.go
+
+FROM registry-proxy.engineering.redhat.com/ubi9/ubi-minimal:latest
+
+ENV VCS_REF="$VCS_REF" \
+    USER_UID=1001
+
+COPY --from=builder /go/src/github.com/stolostron/insights-metrics/insights-metrics /bin
+
+EXPOSE 3031
+USER ${USER_UID}
+ENTRYPOINT ["/bin/insights-metrics"]
+
+ARG ACM_VERSION=${ACM_VERSION}
+
+LABEL com.redhat.component="acm-insights-metrics-container" \
+      description="Insights metrics service" \
+      maintainer="acm-contact@redhat.com" \
+      name="rhacm2/insights-metrics-rhel9" \
+      org.label-schema.license="Red Hat Advanced Cluster Management for Kubernetes EULA" \
+      org.label-schema.schema-version="1.0" \
+      summary="Insights metrics service" \
+      io.k8s.display-name="Insights metrics" \
+      io.k8s.description="Insights metrics service" \
+      io.openshift.tags="data,images" \
+      cpe="cpe:/a:redhat:acm:${ACM_VERSION}::el9"
