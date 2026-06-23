@@ -4,16 +4,16 @@
 package collectors
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
-	"golang.org/x/net/context"
 	koptions "k8s.io/kube-state-metrics/pkg/options"
 	"k8s.io/kube-state-metrics/pkg/whiteblacklist"
 )
 
 var (
-	ctx context.Context = context.TODO()
+	ctx = context.TODO()
 )
 
 func TestBuilder_WithApiserver(t *testing.T) {
