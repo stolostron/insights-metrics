@@ -1,6 +1,7 @@
 package collectors
 
 import (
+	"context"
 	"sort"
 	"strings"
 
@@ -8,7 +9,6 @@ import (
 	"k8s.io/kube-state-metrics/pkg/metric"
 	"k8s.io/kube-state-metrics/pkg/options"
 
-	"golang.org/x/net/context"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
