@@ -51,6 +51,7 @@ func TestCurrentTLSProfileData_WithProfile(t *testing.T) {
 	}
 	if data == nil {
 		t.Fatal("expected non-nil data")
+		return
 	}
 	if data["type"] != "Intermediate" {
 		t.Errorf("expected type Intermediate, got %v", data["type"])

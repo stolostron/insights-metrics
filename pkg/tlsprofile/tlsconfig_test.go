@@ -50,12 +50,13 @@ func TestGetTLSConfig_NoAPIServer(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config on Intermediate fallback")
+		return
 	}
 	if ok {
 		t.Error("snapshot should be invalid on fallback")
 	}
-	if cfg.MinVersion != tls.VersionTLS12 {
-		t.Errorf("expected TLS 1.2 fallback, got %d", cfg.MinVersion)
+	if got := cfg.MinVersion; got != tls.VersionTLS12 {
+		t.Errorf("expected TLS 1.2 fallback, got %d", got)
 	}
 }
 
@@ -67,6 +68,7 @@ func TestGetTLSConfig_NoProfile(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config for default profile")
+		return
 	}
 	if !ok {
 		t.Error("snapshot should be valid")
@@ -89,6 +91,7 @@ func TestGetTLSConfig_IntermediateProfile(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
+		return
 	}
 	if !ok {
 		t.Error("snapshot should be valid")
@@ -111,6 +114,7 @@ func TestGetTLSConfig_OldProfile(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
+		return
 	}
 	if !ok {
 		t.Error("snapshot should be valid")
@@ -130,6 +134,7 @@ func TestGetTLSConfig_ModernProfile(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
+		return
 	}
 	if !ok {
 		t.Error("snapshot should be valid")
@@ -153,6 +158,7 @@ func TestGetTLSConfig_CustomProfile(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
+		return
 	}
 	if !ok {
 		t.Error("snapshot should be valid")
@@ -167,6 +173,7 @@ func TestIntermediateProfileTLSConfig(t *testing.T) {
 
 	if cfg == nil {
 		t.Fatal("expected non-nil config")
+		return
 	}
 	if cfg.MinVersion != tls.VersionTLS12 {
 		t.Errorf("expected TLS 1.2, got %d", cfg.MinVersion)
