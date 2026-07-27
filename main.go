@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"context"
+	"crypto/tls"
 	"io"
 	"log"
 	"net"
@@ -16,12 +17,15 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	ocollectors "github.com/stolostron/insights-metrics/pkg/collectors"
 	"github.com/stolostron/insights-metrics/pkg/options"
+	"github.com/stolostron/insights-metrics/pkg/tlsprofile"
 	metricsstore "k8s.io/kube-state-metrics/pkg/metrics_store"
 	koptions "k8s.io/kube-state-metrics/pkg/options"
 	"k8s.io/kube-state-metrics/pkg/whiteblacklist"
@@ -49,6 +53,20 @@ func main() {
 		opts.Usage()
 		os.Exit(0)
 	}
+	// Read the cluster's APIServer TLS security profile and poll for changes.
+	// On change, the poller exits the process so the Deployment controller restarts
+	// the pod with the updated TLS config.
+	var tlsCfg *tls.Config
+	restConfig, err := clientcmd.BuildConfigFromFlags(opts.Apiserver, opts.Kubeconfig)
+	if err != nil {
+		klog.Warningf("Cannot create REST config for TLS profile lookup: %v", err)
+		tlsCfg = tlsprofile.IntermediateProfileTLSConfig()
+	} else {
+		dynamicClient := dynamic.NewForConfigOrDie(restConfig)
+		tlsCfg = tlsprofile.GetTLSConfig(dynamicClient)
+		go tlsprofile.PollAPIServerTLSProfile(context.Background(), dynamicClient)
+	}
+
 	collectorBuilder := ocollectors.NewBuilder(context.TODO())
 	collectorBuilder.WithApiserver(opts.Apiserver).WithKubeConfig(opts.Kubeconfig)
 	if len(opts.Collectors) == 0 {
@@ -92,13 +110,13 @@ func main() {
 	if err := ocmMetricsRegistry.Register(collectors.NewGoCollector()); err != nil {
 		panic(err)
 	}
-	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort, opts.TLSCrtFile, opts.TLSKeyFile)
+	go telemetryServer(ocmMetricsRegistry, opts.TelemetryHost, opts.TelemetryPort, opts.TLSCrtFile, opts.TLSKeyFile, tlsCfg)
 
-	collectors := collectorBuilder.Build()
+	metricsCollectors := collectorBuilder.Build()
 
-	serveMetrics(collectors, opts.Host, opts.Port, opts.EnableGZIPEncoding, opts.TLSCrtFile, opts.TLSKeyFile)
+	serveMetrics(metricsCollectors, opts.Host, opts.Port, opts.EnableGZIPEncoding, opts.TLSCrtFile, opts.TLSKeyFile, tlsCfg)
 }
-func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrtFile string, tlsKeyFile string) {
+func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrtFile string, tlsKeyFile string, tlsCfg *tls.Config) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
 
@@ -127,6 +145,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 		Addr:              listenAddress,
 		ReadHeaderTimeout: 5 * time.Minute,
 		Handler:           mux,
+		TLSConfig:         tlsCfg,
 	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting insights-metrics self metrics tls server: %s", listenAddress)
@@ -140,7 +159,7 @@ func telemetryServer(registry prometheus.Gatherer, host string, port int, tlsCrt
 
 // TODO: How about accepting an interface Collector instead?
 func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int, enableGZIPEncoding bool, tlsCrtFile string,
-	tlsKeyFile string) {
+	tlsKeyFile string, tlsCfg *tls.Config) {
 	// Address to listen on for web interface and telemetry
 	listenAddress := net.JoinHostPort(host, strconv.Itoa(port))
 
@@ -183,6 +202,7 @@ func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int
 		Addr:              listenAddress,
 		ReadHeaderTimeout: 5 * time.Minute,
 		Handler:           mux,
+		TLSConfig:         tlsCfg,
 	}
 	if tlsCrtFile != "" && tlsKeyFile != "" {
 		klog.Infof("Starting metrics server: %s", listenAddress)
