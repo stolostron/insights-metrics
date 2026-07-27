@@ -195,6 +195,49 @@ func TestPollTLSProfile_RecoveryBaselinesDefault(t *testing.T) {
 	pollTLSProfile(ctx, client, 50*time.Millisecond, nil, false)
 }
 
+func TestPollTLSProfile_ErrorContinues(t *testing.T) {
+	// Start with a valid APIServer, then delete it so the poll loop hits an error.
+	apiServer := newFakeAPIServer(map[string]interface{}{
+		"type": "Intermediate",
+	})
+	client := newFakeDynamicClient(apiServer)
+
+	initial, err := currentTLSProfileData(context.TODO(), client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Delete the APIServer so the next poll returns an error.
+	err = client.Resource(apiServerGVR).Delete(context.TODO(), "cluster", metav1.DeleteOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error deleting APIServer: %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	// Should log the error and continue (not crash), exiting when ctx expires.
+	pollTLSProfile(ctx, client, 50*time.Millisecond, initial, true)
+}
+
+func TestPollTLSProfile_RecoveryRestartsOnNonIntermediate(t *testing.T) {
+	// When startup failed (initialValid=false) and cluster profile is NOT Intermediate,
+	// the poller should detect the mismatch. We can't test os.Exit directly, but we
+	// verify that currentTLSProfileData returns a non-Intermediate profile in that scenario.
+	apiServer := newFakeAPIServer(map[string]interface{}{
+		"type": "Modern",
+	})
+	client := newFakeDynamicClient(apiServer)
+
+	current, err := currentTLSProfileData(context.TODO(), client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if isEffectivelyIntermediate(current) {
+		t.Error("Modern profile should not be effectively Intermediate")
+	}
+}
+
 func TestPollAPIServerTLSProfile_Wrapper(t *testing.T) {
 	// Exercises the exported wrapper with a stable profile so it exits via context.
 	apiServer := newFakeAPIServer(map[string]interface{}{
