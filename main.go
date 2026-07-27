@@ -18,7 +18,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -57,7 +59,16 @@ func main() {
 	// On change, the poller exits the process so the Deployment controller restarts
 	// the pod with the updated TLS config.
 	var tlsCfg *tls.Config
-	restConfig, err := clientcmd.BuildConfigFromFlags(opts.Apiserver, opts.Kubeconfig)
+	var restConfig *rest.Config
+	var err error
+	if opts.Kubeconfig != "" || opts.Apiserver != "" {
+		restConfig, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: opts.Kubeconfig},
+			&clientcmd.ConfigOverrides{ClusterInfo: clientcmdapi.Cluster{Server: opts.Apiserver}},
+		).ClientConfig()
+	} else {
+		restConfig, err = rest.InClusterConfig()
+	}
 	if err != nil {
 		klog.Warningf("Cannot create REST config for TLS profile lookup: %v", err)
 		tlsCfg = tlsprofile.IntermediateProfileTLSConfig()
