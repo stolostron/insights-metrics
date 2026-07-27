@@ -19,16 +19,16 @@ const tlsPollInterval = 60 * time.Second
 // PollAPIServerTLSProfile polls the APIServer resource and exits the process if the TLS
 // security profile changes. The Deployment controller restarts the pod, which picks up
 // the new profile on startup.
-func PollAPIServerTLSProfile(ctx context.Context, dynamicClient dynamic.Interface) {
-	pollTLSProfile(ctx, dynamicClient, tlsPollInterval)
+func PollAPIServerTLSProfile(ctx context.Context, dynamicClient dynamic.Interface,
+	initialProfile map[string]interface{}, initialValid bool) {
+	pollTLSProfile(ctx, dynamicClient, tlsPollInterval, initialProfile, initialValid)
 }
 
 // pollTLSProfile is the testable core of PollAPIServerTLSProfile.
-func pollTLSProfile(ctx context.Context, dynamicClient dynamic.Interface, interval time.Duration) {
-	initial, err := currentTLSProfileData(dynamicClient)
-	initialValid := err == nil
+func pollTLSProfile(ctx context.Context, dynamicClient dynamic.Interface, interval time.Duration,
+	initial map[string]interface{}, initialValid bool) {
 	if !initialValid {
-		klog.Warningf("Could not read initial APIServer TLS profile, will keep polling: %v", err)
+		klog.Warning("No valid initial TLS profile baseline, will capture on first successful poll")
 	}
 
 	klog.Infof("TLS profile poller started, polling every %s", interval)
@@ -42,9 +42,9 @@ func pollTLSProfile(ctx context.Context, dynamicClient dynamic.Interface, interv
 			klog.Info("TLS profile poller stopped")
 			return
 		case <-ticker.C:
-			current, err := currentTLSProfileData(dynamicClient)
+			current, err := currentTLSProfileData(ctx, dynamicClient)
 			if err != nil {
-				klog.Warningf("Error polling APIServer TLS profile: %v", err)
+				klog.Warning("Error polling APIServer TLS profile")
 				continue
 			}
 			if !initialValid {
@@ -63,8 +63,12 @@ func pollTLSProfile(ctx context.Context, dynamicClient dynamic.Interface, interv
 }
 
 // currentTLSProfileData reads the raw tlsSecurityProfile from the APIServer resource.
-func currentTLSProfileData(dynamicClient dynamic.Interface) (map[string]interface{}, error) {
-	obj, err := dynamicClient.Resource(apiServerGVR).Get(context.TODO(), "cluster", metav1.GetOptions{})
+// Returns nil (not an error) when the field is absent, representing the default profile.
+func currentTLSProfileData(ctx context.Context, dynamicClient dynamic.Interface) (map[string]interface{}, error) {
+	reqCtx, cancel := context.WithTimeout(ctx, apiServerTimeout)
+	defer cancel()
+
+	obj, err := dynamicClient.Resource(apiServerGVR).Get(reqCtx, "cluster", metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

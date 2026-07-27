@@ -14,7 +14,7 @@ import (
 func TestCurrentTLSProfileData_NoAPIServer(t *testing.T) {
 	client := newFakeDynamicClient()
 
-	data, err := currentTLSProfileData(client)
+	data, err := currentTLSProfileData(context.TODO(), client)
 
 	if err == nil {
 		t.Error("expected error when APIServer doesn't exist")
@@ -28,7 +28,7 @@ func TestCurrentTLSProfileData_NoProfile(t *testing.T) {
 	apiServer := newFakeAPIServer(nil)
 	client := newFakeDynamicClient(apiServer)
 
-	data, err := currentTLSProfileData(client)
+	data, err := currentTLSProfileData(context.TODO(), client)
 
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -44,7 +44,7 @@ func TestCurrentTLSProfileData_WithProfile(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	data, err := currentTLSProfileData(client)
+	data, err := currentTLSProfileData(context.TODO(), client)
 
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -66,8 +66,13 @@ func TestPollTLSProfile_NoChangeDoesNotExit(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
 
+	initial, err := currentTLSProfileData(ctx, client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
 	// Should complete without exiting when the profile doesn't change.
-	pollTLSProfile(ctx, client, 50*time.Millisecond)
+	pollTLSProfile(ctx, client, 50*time.Millisecond, initial, true)
 }
 
 func TestPollTLSProfile_DetectsChange(t *testing.T) {
@@ -77,7 +82,7 @@ func TestPollTLSProfile_DetectsChange(t *testing.T) {
 	client := newFakeDynamicClient(apiServer)
 
 	// Read initial state
-	initial, err := currentTLSProfileData(client)
+	initial, err := currentTLSProfileData(context.TODO(), client)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -95,7 +100,7 @@ func TestPollTLSProfile_DetectsChange(t *testing.T) {
 		t.Fatalf("unexpected error updating APIServer: %v", err)
 	}
 
-	current, err := currentTLSProfileData(client)
+	current, err := currentTLSProfileData(context.TODO(), client)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -114,8 +119,8 @@ func TestCurrentTLSProfileData_StableNormalization(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	data1, _ := currentTLSProfileData(client)
-	data2, _ := currentTLSProfileData(client)
+	data1, _ := currentTLSProfileData(context.TODO(), client)
+	data2, _ := currentTLSProfileData(context.TODO(), client)
 
 	if len(data1) != len(data2) {
 		t.Error("expected stable normalization between reads")
@@ -134,7 +139,7 @@ func TestCurrentTLSProfileData_NoSpec(t *testing.T) {
 	}
 	client := newFakeDynamicClient(obj)
 
-	data, err := currentTLSProfileData(client)
+	data, err := currentTLSProfileData(context.TODO(), client)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}

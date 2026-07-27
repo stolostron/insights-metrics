@@ -70,12 +70,14 @@ func main() {
 		restConfig, err = rest.InClusterConfig()
 	}
 	if err != nil {
-		klog.Warningf("Cannot create REST config for TLS profile lookup: %v", err)
+		klog.Warning("Cannot create REST config for TLS profile lookup")
 		tlsCfg = tlsprofile.IntermediateProfileTLSConfig()
 	} else {
 		dynamicClient := dynamic.NewForConfigOrDie(restConfig)
-		tlsCfg = tlsprofile.GetTLSConfig(dynamicClient)
-		go tlsprofile.PollAPIServerTLSProfile(context.Background(), dynamicClient)
+		var initialProfile map[string]interface{}
+		var profileOK bool
+		tlsCfg, initialProfile, profileOK = tlsprofile.GetTLSConfig(context.TODO(), dynamicClient)
+		go tlsprofile.PollAPIServerTLSProfile(context.Background(), dynamicClient, initialProfile, profileOK)
 	}
 
 	collectorBuilder := ocollectors.NewBuilder(context.TODO())

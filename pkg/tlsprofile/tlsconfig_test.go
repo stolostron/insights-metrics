@@ -3,6 +3,7 @@
 package tlsprofile
 
 import (
+	"context"
 	"crypto/tls"
 	"testing"
 
@@ -45,10 +46,13 @@ func newFakeDynamicClient(objects ...runtime.Object) *dynamicfake.FakeDynamicCli
 func TestGetTLSConfig_NoAPIServer(t *testing.T) {
 	client := newFakeDynamicClient()
 
-	cfg := GetTLSConfig(client)
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
 
 	if cfg == nil {
-		t.Fatal("expected non-nil config")
+		t.Fatal("expected non-nil config on Intermediate fallback")
+	}
+	if ok {
+		t.Error("snapshot should be invalid on fallback")
 	}
 	if cfg.MinVersion != tls.VersionTLS12 {
 		t.Errorf("expected TLS 1.2 fallback, got %d", cfg.MinVersion)
@@ -59,10 +63,13 @@ func TestGetTLSConfig_NoProfile(t *testing.T) {
 	apiServer := newFakeAPIServer(nil)
 	client := newFakeDynamicClient(apiServer)
 
-	cfg := GetTLSConfig(client)
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
 
 	if cfg == nil {
-		t.Fatal("expected non-nil config")
+		t.Fatal("expected non-nil config for default profile")
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
 	}
 	if cfg.MinVersion != tls.VersionTLS12 {
 		t.Errorf("expected TLS 1.2, got %d", cfg.MinVersion)
@@ -78,8 +85,17 @@ func TestGetTLSConfig_IntermediateProfile(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	cfg := GetTLSConfig(client)
+	cfg, snapshot, ok := GetTLSConfig(context.TODO(), client)
 
+	if cfg == nil {
+		t.Fatal("expected non-nil config")
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
+	if snapshot == nil {
+		t.Error("expected non-nil snapshot for explicit profile")
+	}
 	if cfg.MinVersion != tls.VersionTLS12 {
 		t.Errorf("expected TLS 1.2, got %d", cfg.MinVersion)
 	}
@@ -91,8 +107,14 @@ func TestGetTLSConfig_OldProfile(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	cfg := GetTLSConfig(client)
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
 
+	if cfg == nil {
+		t.Fatal("expected non-nil config")
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
 	if cfg.MinVersion != tls.VersionTLS10 {
 		t.Errorf("expected TLS 1.0, got %d", cfg.MinVersion)
 	}
@@ -104,8 +126,14 @@ func TestGetTLSConfig_ModernProfile(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	cfg := GetTLSConfig(client)
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
 
+	if cfg == nil {
+		t.Fatal("expected non-nil config")
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
 	if cfg.MinVersion != tls.VersionTLS13 {
 		t.Errorf("expected TLS 1.3, got %d", cfg.MinVersion)
 	}
@@ -121,8 +149,14 @@ func TestGetTLSConfig_CustomProfile(t *testing.T) {
 	})
 	client := newFakeDynamicClient(apiServer)
 
-	cfg := GetTLSConfig(client)
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
 
+	if cfg == nil {
+		t.Fatal("expected non-nil config")
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
 	if cfg.MinVersion != tls.VersionTLS13 {
 		t.Errorf("expected TLS 1.3, got %d", cfg.MinVersion)
 	}
