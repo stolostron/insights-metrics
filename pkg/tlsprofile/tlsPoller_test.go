@@ -148,3 +148,49 @@ func TestCurrentTLSProfileData_NoSpec(t *testing.T) {
 		t.Error("expected nil data when no spec")
 	}
 }
+
+func TestIsEffectivelyIntermediate(t *testing.T) {
+	tests := []struct {
+		name string
+		data map[string]interface{}
+		want bool
+	}{
+		{"nil = default = Intermediate", nil, true},
+		{"explicit Intermediate", map[string]interface{}{"type": "Intermediate"}, true},
+		{"Modern", map[string]interface{}{"type": "Modern"}, false},
+		{"Old", map[string]interface{}{"type": "Old"}, false},
+		{"Custom", map[string]interface{}{"type": "Custom"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isEffectivelyIntermediate(tt.data); got != tt.want {
+				t.Errorf("isEffectivelyIntermediate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPollTLSProfile_RecoveryBaselinesIntermediate(t *testing.T) {
+	// When startup failed (initialValid=false) and cluster profile is Intermediate,
+	// the poller should baseline it without restarting.
+	apiServer := newFakeAPIServer(map[string]interface{}{
+		"type": "Intermediate",
+	})
+	client := newFakeDynamicClient(apiServer)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	pollTLSProfile(ctx, client, 50*time.Millisecond, nil, false)
+}
+
+func TestPollTLSProfile_RecoveryBaselinesDefault(t *testing.T) {
+	// No explicit profile (nil = default = Intermediate) — should baseline without restart.
+	apiServer := newFakeAPIServer(nil)
+	client := newFakeDynamicClient(apiServer)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+
+	pollTLSProfile(ctx, client, 50*time.Millisecond, nil, false)
+}
