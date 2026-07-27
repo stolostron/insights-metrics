@@ -194,3 +194,17 @@ func TestPollTLSProfile_RecoveryBaselinesDefault(t *testing.T) {
 
 	pollTLSProfile(ctx, client, 50*time.Millisecond, nil, false)
 }
+
+func TestPollAPIServerTLSProfile_Wrapper(t *testing.T) {
+	// Exercises the exported wrapper with a stable profile so it exits via context.
+	apiServer := newFakeAPIServer(map[string]interface{}{
+		"type": "Intermediate",
+	})
+	client := newFakeDynamicClient(apiServer)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+	defer cancel()
+
+	initial, _ := currentTLSProfileData(ctx, client)
+	PollAPIServerTLSProfile(ctx, client, initial, true)
+}

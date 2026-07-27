@@ -168,6 +168,30 @@ func TestGetTLSConfig_CustomProfile(t *testing.T) {
 	}
 }
 
+func TestGetTLSConfig_UnknownProfileType(t *testing.T) {
+	// An unknown profile type resolves to the default (Intermediate) via the openshift library.
+	apiServer := newFakeAPIServer(map[string]interface{}{
+		"type": "UNKNOWN_TYPE",
+	})
+	client := newFakeDynamicClient(apiServer)
+
+	cfg, snapshot, ok := GetTLSConfig(context.TODO(), client)
+
+	if cfg == nil {
+		t.Fatal("expected non-nil config")
+		return
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
+	if snapshot == nil {
+		t.Error("expected non-nil snapshot")
+	}
+	if cfg.MinVersion != tls.VersionTLS12 {
+		t.Errorf("expected TLS 1.2 (default), got %d", cfg.MinVersion)
+	}
+}
+
 func TestIntermediateProfileTLSConfig(t *testing.T) {
 	cfg := IntermediateProfileTLSConfig()
 
