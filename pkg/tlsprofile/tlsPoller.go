@@ -60,10 +60,17 @@ func pollTLSProfile(ctx context.Context, dynamicClient dynamic.Interface, interv
 					continue
 				}
 				klog.Info("APIServer now reachable, cluster profile differs from Intermediate fallback, restarting")
+				klog.Flush()
 				os.Exit(1)
+			}
+			// Treat nil (default) and explicit Intermediate as equivalent
+			// to avoid spurious restarts when an admin toggles between them.
+			if isEffectivelyIntermediate(initial) && isEffectivelyIntermediate(current) {
+				continue
 			}
 			if !reflect.DeepEqual(initial, current) {
 				klog.Info("APIServer TLS profile changed, restarting to apply new config")
+				klog.Flush()
 				os.Exit(1)
 			}
 		}
