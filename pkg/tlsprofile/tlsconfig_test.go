@@ -192,6 +192,33 @@ func TestGetTLSConfig_UnknownProfileType(t *testing.T) {
 	}
 }
 
+func TestGetTLSConfig_NoSpec(t *testing.T) {
+	// APIServer exists but has no spec field at all — should use default profile.
+	obj := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"apiVersion": "config.openshift.io/v1",
+			"kind":       "APIServer",
+			"metadata": map[string]interface{}{
+				"name": "cluster",
+			},
+		},
+	}
+	client := newFakeDynamicClient(obj)
+
+	cfg, _, ok := GetTLSConfig(context.TODO(), client)
+
+	if cfg == nil {
+		t.Fatal("expected non-nil config for default profile")
+		return
+	}
+	if !ok {
+		t.Error("snapshot should be valid")
+	}
+	if cfg.MinVersion != tls.VersionTLS12 {
+		t.Errorf("expected TLS 1.2, got %d", cfg.MinVersion)
+	}
+}
+
 func TestIntermediateProfileTLSConfig(t *testing.T) {
 	cfg := IntermediateProfileTLSConfig()
 
