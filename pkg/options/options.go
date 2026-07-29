@@ -50,7 +50,12 @@ func (o *Options) AddFlags() {
 	}
 
 	flag.StringVar(&o.Apiserver, "apiserver", "", `The URL of the apiserver to use as a master`)
-	flag.StringVar(&o.Kubeconfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
+	// klog.InitFlags already registers --kubeconfig; reuse it instead of re-registering.
+	if f := flag.Lookup("kubeconfig"); f != nil {
+		o.Kubeconfig = f.DefValue
+	} else {
+		flag.StringVar(&o.Kubeconfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
+	}
 	flag.BoolVar(&o.Help, "help", false, "Print Help text")
 	flag.IntVar(&o.Port, "port", 80, `Port to expose metrics on.`)
 	flag.StringVar(&o.Host, "host", "0.0.0.0", `Host to expose metrics on.`)
@@ -70,6 +75,11 @@ func (o *Options) Parse() {
 		return
 	}
 	flag.Parse()
+	// Bind kubeconfig value after parsing, since the flag may have been
+	// pre-registered by controller-runtime's init().
+	if f := flag.Lookup("kubeconfig"); f != nil {
+		o.Kubeconfig = f.Value.String()
+	}
 }
 
 func (o *Options) Usage() {
