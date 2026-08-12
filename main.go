@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/http/pprof"
 	"os"
 	"strconv"
 	"strings"
@@ -147,13 +146,6 @@ func serveMetrics(collectors []*metricsstore.MetricsStore, host string, port int
 	klog.Infof("Starting metrics server: %s", listenAddress)
 
 	mux := http.NewServeMux()
-
-	// TODO: This doesn't belong into serveMetrics
-	mux.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
-	mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
-	mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
-	mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
-	mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 
 	// Add metricsPath
 	mux.Handle(metricsPath, &metricHandler{collectors, enableGZIPEncoding})
