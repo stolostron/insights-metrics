@@ -225,7 +225,7 @@ func Test_createPolicyReportListWatchWithClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := createPolicyReportListWatchWithClient(tt.args.client, tt.args.ns)
-			l, err := got.ListFunc(metav1.ListOptions{})
+			l, err := got.ListWithContext(ctx, metav1.ListOptions{})
 			if (err != nil) != tt.wantErr {
 				t.Error(err)
 			}
@@ -237,7 +237,7 @@ func Test_createPolicyReportListWatchWithClient(t *testing.T) {
 			if !reflect.DeepEqual(lU.Items[0], *prU) {
 				t.Errorf("expected of %v got %v", *prU, lU.Items[0])
 			}
-			w, err := got.WatchFunc(metav1.ListOptions{})
+			w, err := got.WatchWithContext(ctx, metav1.ListOptions{})
 			if (err != nil) != tt.wantErr {
 				t.Error(err)
 			}
