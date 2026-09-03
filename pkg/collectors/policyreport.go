@@ -18,7 +18,7 @@ import (
 var (
 	descPolicyReportLabelsName    = "policyreport_info"
 	descPolicyReportLabelsHelp    = "Open Cluster Management PolicyReport Info."
-	descPolicyReportDefaultLabels = []string{"managed_cluster_id", "category", "policy", "result", "severity"}
+	descPolicyReportDefaultLabels = []string{"managed_cluster_id", "managed_cluster_name", "category", "policy", "result", "severity"}
 
 	policyReportGvr = schema.GroupVersionResource{
 		Group:    "wgpolicyk8s.io",
@@ -51,7 +51,7 @@ func getPolicyReportMetricFamilies(client dynamic.Interface) []metric.FamilyGene
 
 				f := metric.Family{}
 
-				for result, val := range getResults(clusterId, pr) {
+				for result, val := range getResults(clusterId, clusterName, pr) {
 					f.Metrics = append(f.Metrics, &metric.Metric{
 						LabelKeys:   descPolicyReportDefaultLabels,
 						LabelValues: result.values(),
@@ -93,16 +93,18 @@ func createPolicyReportListWatchWithClient(client dynamic.Interface, ns string) 
 }
 
 type metricResult struct {
-	clusterID string
-	category  string
-	policy    string
-	result    string
-	severity  string
+	clusterID   string
+	clusterName string
+	category    string
+	policy      string
+	result      string
+	severity    string
 }
 
 func (mr metricResult) values() []string {
 	return []string{
 		mr.clusterID,
+		mr.clusterName,
 		mr.category,
 		mr.policy,
 		mr.result,
@@ -112,7 +114,7 @@ func (mr metricResult) values() []string {
 
 // getResults extracts the metrics information from the results in the PolicyReport.
 // Since multiple results can share the same name & labels, a count for each is returned.
-func getResults(clusterID string, pr *v1alpha2.PolicyReport) map[metricResult]int {
+func getResults(clusterID string, clusterName string, pr *v1alpha2.PolicyReport) map[metricResult]int {
 	results := make(map[metricResult]int)
 
 	if clusterID == "" {
@@ -143,11 +145,12 @@ func getResults(clusterID string, pr *v1alpha2.PolicyReport) map[metricResult]in
 
 		if reportResult.Policy != "" {
 			results[metricResult{
-				clusterID: clusterID,
-				category:  reportResult.Category,
-				policy:    reportResult.Policy,
-				result:    result,
-				severity:  severity,
+				clusterID:   clusterID,
+				clusterName: clusterName,
+				category:    reportResult.Category,
+				policy:      reportResult.Policy,
+				result:      result,
+				severity:    severity,
 			}] += 1
 		}
 	}
