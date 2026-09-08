@@ -145,16 +145,16 @@ func Test_getPolicyReportMetricFamilies(t *testing.T) {
 	tests := []generateMetricsTestCase{
 		{
 			Obj:  prU,
-			Want: `policyreport_info{managed_cluster_id="mycluster_id",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
+			Want: `policyreport_info{managed_cluster_id="mycluster_id",managed_cluster_name="local-cluster",category="openshift,configuration,service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="critical"} 1`,
 		}, {
 			Obj:  prUM,
-			Want: `policyreport_info{managed_cluster_id="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
+			Want: `policyreport_info{managed_cluster_id="managed-cluster",managed_cluster_name="managed-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="skip",severity="important"} 1`,
 		}, {
 			Obj: prWithDuplicates,
 			Want: strings.Join([]string{
-				`policyreport_info{managed_cluster_id="mycluster_id",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 2`,
-				`policyreport_info{managed_cluster_id="mycluster_id",category="other",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 1`,
-				`policyreport_info{managed_cluster_id="mycluster_id",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="moderate"} 1`,
+				`policyreport_info{managed_cluster_id="mycluster_id",managed_cluster_name="local-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 2`,
+				`policyreport_info{managed_cluster_id="mycluster_id",managed_cluster_name="local-cluster",category="other",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="important"} 1`,
+				`policyreport_info{managed_cluster_id="mycluster_id",managed_cluster_name="local-cluster",category="service_availability",policy="MASTER_DEFINED_AS_MACHINESET",result="fail",severity="moderate"} 1`,
 			}, "\n"),
 		},
 	}
