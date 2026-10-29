@@ -126,7 +126,7 @@ func (b *Builder) buildPolicyReportCollectorWithClient(client dynamic.Interface)
 		familyHeaders,
 		composedMetricGenFuncs,
 	)
-	reflectorPerNamespace(b.ctx, &unstructured.Unstructured{}, store,
+	reflectorPerNamespace(b.ctx, &unstructured.Unstructured{}, &cacheStoreAdapter{MetricsStore: store},
 		b.apiserver, b.kubeconfig, b.namespaces, createPolicyReportListWatch)
 
 	return store
@@ -149,3 +149,13 @@ func reflectorPerNamespace(
 		go reflector.Run(ctx.Done())
 	}
 }
+
+// cacheStoreAdapter bridges kube-state-metrics' MetricsStore with the
+// client-go v0.37 cache.Store interface, which now requires Bookmark.
+type cacheStoreAdapter struct {
+	*metricsstore.MetricsStore
+}
+
+func (a *cacheStoreAdapter) LastStoreSyncResourceVersion() string { return "" }
+
+func (a *cacheStoreAdapter) Bookmark(_ string) {}
