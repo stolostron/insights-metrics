@@ -22,7 +22,7 @@ require (
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd // indirect
 	open-cluster-management.io/api v0.16.2
 	sigs.k8s.io/controller-runtime v0.25.2 // indirect
-	sigs.k8s.io/wg-policy-prototypes v0.0.0-20230505033312-51c21979086a
+	sigs.k8s.io/wg-policy-prototypes v0.0.0-20250521155141-ed0ca5a1c778
 )
 
 require github.com/openshift/controller-runtime-common v0.0.0-20260213175913-767fef058eca
