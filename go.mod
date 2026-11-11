@@ -6,7 +6,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/openshift/api v0.0.0-20261028163820-1f109e9eefc7
+	github.com/openshift/api v0.0.0-20261109202217-f6e8a0876ff9
 	github.com/prometheus/client_golang v1.25.0
 	github.com/prometheus/common v0.72.0 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
